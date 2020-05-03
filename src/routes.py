@@ -1,5 +1,7 @@
 from flask import Blueprint, redirect, request, render_template, send_from_directory, g
 from src.errors import getLoginErrorMessage
+from src.config import MAX_USERS
+import random
 
 routes = Blueprint('routes', __name__)
 
@@ -7,7 +9,22 @@ routes = Blueprint('routes', __name__)
 def home():
     # Simple example of using logged_in feature to change layout.
     if g.logged_in:
-        return render_template('app.html')
+        from src.api.users import Users
+        from src.api.followers import Followers
+
+        following = [x.to_id for x in Followers.query.filter_by(from_id=g.user.user_id).all()]
+
+        g.following = Users.query.filter(Users.user_id.in_(following)).all()
+        g.followers = Users.query.filter(Users.user_id.in_([x.from_id for x in Followers.query.filter_by(to_id=g.user.user_id).all()])).all()
+
+        not_following = Users.query.filter(~Users.user_id.in_(following + [g.user.user_id])).all()
+
+        g.users = random.sample(not_following, k=min(10, len(not_following)))
+
+        if(len(g.followers) > MAX_USERS * 0.75):
+            return render_template('app.html', flag='MTL{X55_15_8483}')
+        else:
+            return render_template('app.html')
     else:
         return render_template('home.html')
 

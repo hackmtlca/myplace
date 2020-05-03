@@ -2,21 +2,24 @@ from flask import Blueprint, redirect, request, make_response
 import os
 import glob
 import shutil
+from src.api.users import Users, generate_users
+from src.api.followers import Followers
+from app import db
 
-tools = Blueprint('tools', __name__, url_prefix='/api/tools')
+def generate_database():
+    # Checks if tmp folder exists.
+    if not os.path.exists('./tmp'):
+        os.mkdir('./tmp')
 
-# Method to reset the database.
-@tools.route('/reset', methods=['GET', 'POST'])
-def reset():
     # Checks if there is a database. If so, delete.
     if os.path.exists('./tmp/database.db'):
         os.remove('./tmp/database.db')
 
-    # Copies the files from data.
-    for f in glob.glob(os.path.join('./data', '*.*')):
-        shutil.copy(f, './tmp')
+    # Creates the new file and closes.
+    open('./tmp/database.db', 'w').close()
 
-    # Revokes the sessions token.
-    response = make_response(redirect('/'))
-    response.delete_cookie('session')
-    return response
+    # Creates the tables for the models.
+    db.create_all()
+    db.session.commit()
+
+    generate_users()

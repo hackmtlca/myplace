@@ -2,12 +2,19 @@ version: '3'
 
 services:
   server:
-    container_name: server
+    container_name: myplace-server
     build:
       context: ./
       dockerfile: Dockerfile
     ports:
       - '80:80'
+    networks:
+      - network
+  cron:
+    container_name: myplace-cron
+    build:
+      context: ./cron
+      dockerfile: Dockerfile
     networks:
       - network
 

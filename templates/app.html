@@ -1,9 +1,73 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
-{% block homeActive %}active{% endblock %}
 
 {% block body %}
-<div class="d-flex justify-content-center align-items-center">
-    <h1>Welcome {{g.user['username']}}</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-md-0 mb-4">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <center>
+                        <h4 class="font-weight-bold mb-4">{{g.user['username']}}</h4>
+                    </center>
+                    <hr>
+                    <form action='/api/users/status' method="POST">
+                        <label for="status">Status</label>
+                        <input id="status" name="status" class="form-control" value="{% if g.user['status'] %}{{g.user['status']}}{% endif %}" />
+                        <br>
+                        <button type="submit" class="btn btn-outline-light">Update</button>
+                    </form>
+                    <hr>
+                    <a data-toggle="collapse" data-target="#collapseFollowers" aria-expanded="false" aria-controls="collapseFollowers">
+                        <label style="cursor: pointer">Followers - {{g.followers|length}}</label>
+                    </a>
+                    <div class="collapse" id="collapseFollowers">
+                        <ul id="follower" name="follower" class="list-group" style="color: black">
+                            {% for follower in g.followers %}
+                            <li class="list-group-item">{{follower['username']|safe}} - {{follower['status']|safe}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <hr>
+                    <a data-toggle="collapse" data-target="#collapseFollowing" aria-expanded="false" aria-controls="collapseFollowing">
+                        <label style="cursor: pointer">Following - {{g.following|length}}</label>
+                    </a>
+                    <div class="collapse" id="collapseFollowing">
+                        <ul id="following" name="following" class="list-group" style="color: black">
+                            {% for f in g.following %}
+                            <li class="list-group-item">{{f['username']|safe}} - {{f['status']|safe}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% if flag %}
+                        <hr>
+                        <label>Flag - {{flag}}</label>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col container">
+            {% for user in g.users %}
+            <div class="row">
+                <div class="col">
+                    <div class="card text-white bg-secondary">
+                        <div class="card-body">
+                            <center>
+                                <h4 class="font-weight-bold mb-4">{{user['username']|safe}}</h4>
+                            </center>
+                            <hr>
+                            {{user['status']|safe}}
+                            <hr>
+                            <form action="/api/users/follow/{{user['user_id']}}">
+                                <button type="submit" class="btn btn-outline-light flow-right">Follow</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 {% endblock %}
